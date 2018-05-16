@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spotify Lyrics</title>
+    <link type="text/css" rel="stylesheet" href="assets/css/materialize.css"  media="screen,projection"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body class="" style="background:#181818;overflow-y:scroll;">
+    
+    <!-- NAV -->
+    <div class="navbar-fixed">
+        <nav>
+            <div style="background-color:#282828;" class="nav-wrapper navbar-fixed">
+                <a href="#" style="display: inline;" data-target="slide-out" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+                <ul id="nav-mobile" class="right hide-on-med-and-down">
+                <li id="refresh-btn" class="tooltipped" data-position="bottom" data-tooltip="Refresh current song!">
+                    <a onclick="refreshSong()" href="#"><i class="material-icons" >refresh</i></a>
+                </li>
+                <li class="tooltipped" data-position="bottom" data-tooltip="Wrong song?">
+                    <a onclick="chooseSongWindow()" href="#"><i class="material-icons">error_outline</i></a>
+                </li>
+                <li><a href="#"></a></li>
+
+                </ul>
+            </div>
+        </nav>
+    </div>
+
+    <!-- SIDENAV -->
+    <ul id="slide-out" class="sidenav grey darken-4">
+            <li><div class="user-view">
+                <div class="background"></div>
+                <a href="#user"><img class="circle" src=""></a>
+                <a href="#name"><span class="white-text name">John Doe</span></a>
+                <a href="#email"><span class="white-text email">jdandturk@gmail.com</span></a>
+            </div></li>
+            <li><a href="#!"><i class="material-icons">cloud</i>First Link With Icon</a></li>
+            <li><a href="#!">Second Link</a></li>
+            <li><div class="divider teal darken-2"></div></li>
+            <li><a class="subheader">Subheader</a></li>
+            <li><a class="waves-effect" href="#!">Third Link With Waves</a></li>
+    </ul>   
+
+    <!-- CONTENT -->
+    <div class="container">
+        <div class="row" >
+            <div class="col s12 m12 l12">
+                <br>
+                <h4 id="songTitle" class="center center-block grey-text text-lighten-3"></h4>
+                <br>
+                <div id="lyricsDiv" class="center center-block grey-text text-lighten-3 flow-text" style="white-space:pre-wrap;"></div>
+                <br>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12 m12 l12">
+                <!-- HOLY SHIT KILL ME. fixed bug where the scrollbar would do small jumps all the time, 
+                    turns out the loading icon is a rectangle that rotates which caused the page to change height all the time. 
+                    Fixed by adding a margin to the bottom.-->
+                <div id="loadingIcon" style="display:block;margin-bottom: 25px;" class="center-block preloader-wrapper big active">
+                    <div class="spinner-layer spinner-blue-only">
+                        <div class="circle-clipper left">
+                        <div class="circle"></div>
+                        </div><div class="gap-patch">
+                        <div class="circle"></div>
+                        </div><div class="circle-clipper right">
+                        <div class="circle"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+        const electron = require('electron');
+        const {ipcRenderer} = electron;
+
+        const lyricsContainer = document.getElementById('lyricsDiv');
+        const songTitleContainer = document.getElementById('songTitle');
+
+        var instancesTooltip;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var elemsNav = document.querySelectorAll('.sidenav');
+            var instancesNav = M.Sidenav.init(elemsNav, {});
+
+            var elemsTooltip = document.querySelectorAll('.tooltipped');
+            instancesTooltip = M.Tooltip.init(elemsTooltip, {enterDelay:500,exitDelay:0});
+        });
+        
+        // Set Lyrics into elements
+        ipcRenderer.on('lyrics:show',function(e,item){
+            document.getElementById('loadingIcon').style.visibility = "hidden";
+            songTitleContainer.innerText = item.full_title;
+            lyricsContainer.innerHTML = item.lyrics;
+        });
+
+        // Called when the refresh button is clicked
+        function refreshSong(){
+            document.getElementById('loadingIcon').style.visibility = "visible";
+            songTitleContainer.innerText = '';
+            lyricsContainer.innerHTML = '';
+            ipcRenderer.send('song:refresh');
+
+            var instance = M.Tooltip.getInstance(document.getElementById('refresh-btn'));
+            console.log(instance);
+            instance.close();
+        }
+
+        // Called when the "wrong song" button is clicked
+        function chooseSongWindow(){
+            ipcRenderer.send('choosesong:open');
+        }
+
+    </script>
+    <script type="text/javascript" src="assets/js/materialize.js"></script>
+</body>
+</html>
