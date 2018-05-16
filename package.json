@@ -1,21 +1,23 @@
 {
   "name": "spotify-lyrics",
-  "version": "0.0.1",
+  "productName": "Spotify Lyrics",
+  "version": "0.1.0",
   "description": "Show lyrics to the song you're listening to on Spotify.",
   "main": "main.js",
   "scripts": {
-    "package-win": "electron-packager . spotifywebhelper --overwrite --asar=true --platform=win32 --arch=ia32 --icon=assets/app-icon/win/app.ico --prune=true --out=release-builds --version-string.CompanyName=CE --version-string.FileDescription=CE --version-string.ProductName=\"Spotify Lyrics\"",
+    "package-win": "electron-packager . spotify-lyrics --overwrite --asar=true --platform=win32 --arch=ia32 --icon=assets/app-icon/win/app.ico --prune=true --out=release-builds --version-string.CompanyName=CE --version-string.FileDescription=CE --version-string.ProductName=\"Spotify Lyrics\"",
     "start": "electron ."
   },
   "author": "Sebastian Schuler",
   "license": "MIT",
   "dependencies": {
-    "electron": "^2.0.0",
     "genius-api": "^0.4.1",
     "lyricist": "^2.2.2",
     "spotify-web-helper": "^1.13.0"
   },
   "devDependencies": {
-    "electron-packager": "^12.0.2"
+    "electron": "^2.0.0",
+    "electron-packager": "^12.0.2",
+    "electron-winstaller": "^2.6.4"
   }
 }
