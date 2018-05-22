@@ -13,7 +13,6 @@ const genius = new api(process.env.GENIUS_ACCESS_TOKEN);
 const lyricist = new Lyricist(process.env.GENIUS_ACCESS_TOKEN);
 
 let mainWindow;
-//let chooseSongWindow;
 
 /*
 ===================================== WINDOWS =================================
@@ -26,7 +25,13 @@ app.on('ready', function(){
     mainWindow = new BrowserWindow({
         width: 1024, 
         height: 640,
+        backgroundColor:'#181818',
+        show: false,
         title:'Spotify Lyrics'
+    });
+
+    mainWindow.once('ready-to-show', ()=>{
+        mainWindow.show();
     });
 
     mainWindow.loadURL(url.format({
@@ -46,11 +51,16 @@ app.on('ready', function(){
 
 // Handle create chooseSong Window
 function chooseSongWindow(){
+
     // Create new window
-    chooseSongWindow = new BrowserWindow({
+    let chooseSongWindow = new BrowserWindow({
+        parent: mainWindow,
+        modal: true,
         width:300,
-        height:200,
-        title:'Choose the correct song'
+        height:500,
+        frame: false,
+        title:'Choose the correct song',
+        show: false
     });
 
     // Load html into window
@@ -60,10 +70,17 @@ function chooseSongWindow(){
         slashes: true
     }));
 
+    chooseSongWindow.once('ready-to-show', ()=>{
+        chooseSongWindow.show();
+    });
+
     // Garbage Collection handle
     chooseSongWindow.on('close',function(){
         chooseSongWindow = null;
     });
+
+    // Remove Menu Bar
+    chooseSongWindow.setMenu(null);
 }
 
 /*
@@ -72,7 +89,7 @@ function chooseSongWindow(){
 
 // Catch item:add
 ipcMain.on('song:refresh', function(e){
-    updateShownSong();
+    updatePlayingSong();
 });
 
 // Catch choosesong:open
@@ -80,13 +97,62 @@ ipcMain.on('choosesong:open', function(e){
     chooseSongWindow();
 });
 
+ipcMain.on('song:changed_by_user',function(e){
+    console.log("working ---------------------------");
+    updateShownLyrics(e);
+});
+
 /*
 ================================ SPOTIFY HELPER ===========================
 */
 
 helper.player.on('error', err => {
-    console.log(err);
-    dialog.showErrorBox("Error with Spotify Web Helper", error);
+    console.log('------- ERROR-------------');
+
+    // TODO Check if internet is working
+
+    // If = undefined, spotify is not running
+    if(err.message  == undefined){
+        mainWindow.webContents.send('spotify:error', {message: 'Spotify is not running',title: 'Error'});
+    }else{
+        if(helper.status == null){
+            mainWindow.webContents.send('spotify:error', {message: 'You\'re not connected to the internet' ,title: 'Error'});
+        }else{
+            //TODO when does this happen?
+            console.log('helper is not null');
+        }
+    }
+
+    //dialog.showErrorBox("Error with Spotify Web Helper", err);
+    //console.log(helper.);
+/*
+    console.log('BEGIN -------------------')
+
+    if(helper.status == null){
+        console.log('Helper cant be initialized');
+        console.log(helper.status);
+        mainWindow.webContents.send('spotify:error', {message: 'You\'re not connected to the internet',title: ''})
+
+    }else{        
+        if(helper.status.online){
+            console.log('STATUS: Online');
+        }else{
+            console.log('STATUS: Offline');
+        }
+
+        if(helper.status.running){
+            console.log('STATUS: Running');
+        }else{
+            console.log('STATUS: Not Running');
+        }
+    }
+
+    console.log('END --------------------')
+
+    if(err.message.match('No port found in range')){
+        console.log('MATCHED');
+    }*/
+
     /*if (err.message.match(/No user logged in/)) {
       // also fires when Spotify client quits
       console.log('ERROR: not logged in');
@@ -97,19 +163,20 @@ helper.player.on('error', err => {
 });
 
 helper.player.on('ready', () => {
-  
-    //helper.player.on('track-will-change', track => { updateShownSong(track) });
 
+    // If player works, internet and spotify work, so we can remove any error messages that might be showing
+    mainWindow.webContents.send('spotify:running');
+  
     helper.player.on('track-will-change', function(track){ 
-        updateShownSong(track) 
+        updatePlayingSong(track) 
     });
 
      //Playback events
      
     helper.player.on('play', function(){ 
-        updateShownSong(undefined) 
+        updatePlayingSong(undefined) 
     });
-    /*
+    
     helper.player.on('pause', () => { console.log('pause') }).catch(function(error) {
         console.error(error);
     });
@@ -124,19 +191,26 @@ helper.player.on('ready', () => {
     });
     helper.player.on('status-will-change', status => {console.log('status-will-change')}).catch(function(error) {
         console.error(error);
-    });*/
+    });
   
-    updateShownSong(undefined);
+    //updatePlayingSong(undefined);
 });
 
+// Try to run updatePlayingSong only once
+helper.player.once('ready',()=>{
+    updatePlayingSong(undefined);
+});
 
-function updateShownSong(track_obj) {
+// Receive currently playing track from spotify helper and look it up on genius, send results via ipc
+function updatePlayingSong(track_obj) {
 
+    // If spotify is not running/doesn't have internet connection =null
     if(helper.status===null){
         dialog.showErrorBox("Connection Error", "Can't connect to spotify");
         return;
     }
 
+    // Receive track object from spotify web helper (either through parameters on method or straight from helper.status)
     var track;
     if(track_obj==undefined){
         track = helper.status.track;
@@ -147,15 +221,33 @@ function updateShownSong(track_obj) {
     // Search for track name + artist name
     genius.search(track.track_resource.name + ' - ' + track.artist_resource.name ).then(function(response) {
 
-        // Use the first results id to scrape the lyrics with lyricist
-        var promise1 = lyricist.song(response.hits[0].result.id,{fetchLyrics: true}).then(song => mainWindow.webContents.send('lyrics:show', song));
-          
+        //TODO Send response to html to display possible songs
+        mainWindow.webContents.send('possible_songs:list', response.hits);
+
+        //TODO test if working with internet connection
+        updateShownLyrics(response.hits[0]);
+
+        /*// Use the first results id to scrape the lyrics with lyricist
+        var promise1 = lyricist.song(response.hits[0].result.id,{fetchLyrics: true}).then(function(song) {
+            mainWindow.webContents.send('lyrics:show', song)
+        });
         promise1.catch(function(error) {
             console.log(error);
             dialog.showErrorBox("Error in Lyricist scraping", error);
-        });
+        });*/
     }).catch(function(error) {
         console.error(error);
         dialog.showErrorBox("Error in genius search", error);
     });
-} 
+}
+
+function updateShownLyrics(element){
+
+    // Use the first results id to scrape the lyrics with lyricist
+    lyricist.song(element.result.id,{fetchLyrics: true}).then(function(song) {
+        mainWindow.webContents.send('lyrics:show', song)
+    }).catch(function(error) {
+        console.log(error);
+        dialog.showErrorBox("Error in Lyricist scraping", error);
+    });
+}

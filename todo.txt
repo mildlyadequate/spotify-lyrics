@@ -1,0 +1,19 @@
+- icon buttons locally available in case of no internet connection
+- choose correct song button / popup
+- Error Handling: 
+	-> First: Check for internet connection
+	-> Then:
+		-getaddrinfo ENOENT open.spotify.com:80
+		-undefined
+		-
+- update shown song function is being called 3 times initially???
+
+-------SHIT ERROR-------------
+undefined
+BEGIN -------------------
+Helper cant be initialized
+null
+END --------------------
+(node:11508) UnhandledPromiseRejectionWarning: Unhandled promise rejection (rejection id: 1): TypeError: Cannot read property 'match' of undefined
+(node:11508) [DEP0018] DeprecationWarning: Unhandled promise rejections are deprecated. In the future, promise rejections that are not handled will terminate the Node.js process with a non-zero exit code.
+

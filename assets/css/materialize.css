@@ -4,6 +4,35 @@
  * MIT License (https://raw.githubusercontent.com/Dogfalo/materialize/master/LICENSE)
  */
 
+/*
+CUSTOM CHANGES
+*/
+
+.spot-background{
+  background:#181818;
+}
+
+.spot-nav-background{
+  background-color:#282828;
+}
+
+.spot-permanent-scrollbar{
+  overflow-y:scroll;
+}
+
+.spot-lyrics-div{
+  white-space:pre-wrap;
+}
+
+.loading-icon{
+  display:block;
+  margin-bottom: 25px;
+}
+
+/*
+MATERIALIZE DEFAULT CLASSES
+*/
+
 .materialize-red {
   background-color: #e51c23 !important;
 }
@@ -7757,7 +7786,6 @@ input[type=range].focused:focus:not(.active)::-ms-thumb {
  *      SHRINK_TIME = 400ms
  */
 .preloader-wrapper {
-  display: inline-block;
   position: relative;
   width: 50px;
   height: 50px;
