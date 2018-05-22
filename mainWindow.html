@@ -1,23 +1,26 @@
 <!DOCTYPE html>
+<!-- UPDATED -->
 <html>
 <head>
     <title>Spotify Lyrics</title>
     <link type="text/css" rel="stylesheet" href="assets/css/materialize.css"  media="screen,projection"/>
+
+    <!-- TODO Replace link with local icons to make them available offline-->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
-<body class="" style="background:#181818;overflow-y:scroll;">
+<body class="spot-background spot-permanent-scrollbar">
     
     <!-- NAV -->
     <div class="navbar-fixed">
         <nav>
-            <div style="background-color:#282828;" class="nav-wrapper navbar-fixed">
+            <div class="nav-wrapper navbar-fixed spot-nav-background">
                 <a href="#" style="display: inline;" data-target="slide-out" class="sidenav-trigger"><i class="material-icons">menu</i></a>
                 <ul id="nav-mobile" class="right hide-on-med-and-down">
                 <li id="refresh-btn" class="tooltipped" data-position="bottom" data-tooltip="Refresh current song!">
                     <a onclick="refreshSong()" href="#"><i class="material-icons" >refresh</i></a>
                 </li>
                 <li class="tooltipped" data-position="bottom" data-tooltip="Wrong song?">
-                    <a onclick="chooseSongWindow()" href="#"><i class="material-icons">error_outline</i></a>
+                    <a onclick="chooseSongWindow()" href="#modal"><i class="material-icons">error_outline</i></a>
                 </li>
                 <li><a href="#"></a></li>
 
@@ -34,30 +37,55 @@
                 <a href="#name"><span class="white-text name">John Doe</span></a>
                 <a href="#email"><span class="white-text email">jdandturk@gmail.com</span></a>
             </div></li>
-            <li><a href="#!"><i class="material-icons">cloud</i>First Link With Icon</a></li>
-            <li><a href="#!">Second Link</a></li>
+            <li><a href="#!"><i class="material-icons">cloud</i>Lyrics</a></li>
+            <li><a href="#!">Options</a></li>
             <li><div class="divider teal darken-2"></div></li>
             <li><a class="subheader">Subheader</a></li>
             <li><a class="waves-effect" href="#!">Third Link With Waves</a></li>
     </ul>   
 
     <!-- CONTENT -->
+    <!-- TODO Scroll without nav, just content-->
     <div class="container">
+
+        <!-- Modal Trigger -->
+        <a class="waves-effect waves-light btn modal-trigger" href="#modal1">Modal</a>
+
+        <!-- Modal Structure -->
+        <div id="modal1" class="modal">
+        <div class="modal-content">
+            <h4>Choose the correct song:</h4>
+            <ul id="choose-correct-song-list">
+                <li>test</li>
+            </ul>
+        </div>
+        <div class="modal-footer">
+            <a href="#!" class="modal-close waves-effect waves-green btn-flat">Agree</a>
+        </div>
+        </div>
+      
+
+        <!-- LYRICS CONTENT -->
+        <!-- TODO: Custom color-->
         <div class="row" >
             <div class="col s12 m12 l12">
                 <br>
                 <h4 id="songTitle" class="center center-block grey-text text-lighten-3"></h4>
                 <br>
-                <div id="lyricsDiv" class="center center-block grey-text text-lighten-3 flow-text" style="white-space:pre-wrap;"></div>
+                <div id="lyricsDiv" class="center center-block grey-text text-lighten-3 flow-text spot-lyrics-div"></div>
                 <br>
             </div>
         </div>
+
+        <!-- LOADING / ERROR PAGE -->
         <div class="row">
             <div class="col s12 m12 l12">
                 <!-- HOLY SHIT KILL ME. fixed bug where the scrollbar would do small jumps all the time, 
                     turns out the loading icon is a rectangle that rotates which caused the page to change height all the time. 
                     Fixed by adding a margin to the bottom.-->
-                <div id="loadingIcon" style="display:block;margin-bottom: 25px;" class="center-block preloader-wrapper big active">
+
+                <!-- LOADING -->
+                <div id="loadingIcon" class="center-block preloader-wrapper big active loading-icon">
                     <div class="spinner-layer spinner-blue-only">
                         <div class="circle-clipper left">
                         <div class="circle"></div>
@@ -67,6 +95,13 @@
                         <div class="circle"></div>
                         </div>
                     </div>
+                </div>
+
+                <!-- ERROR -->
+                <!-- TODO: Add Error Icon instead of Loading Icon, change color to custom color-->
+                <div>
+                    <h5 id="errorTitle" class="center-align grey-text text-lighten-3"></h5>
+                    <h6 id="errorText" class="center-align grey-text text-lighten-3"></h6>
                 </div>
             </div>
         </div>
@@ -80,36 +115,101 @@
         const lyricsContainer = document.getElementById('lyricsDiv');
         const songTitleContainer = document.getElementById('songTitle');
 
+        const loadingIcon = document.getElementById('loadingIcon');
+        const errorTitle = document.getElementById('errorTitle');
+        const errorText = document.getElementById('errorText');
+
         var instancesTooltip;
 
+        // Initialize Materialize Elements
         document.addEventListener('DOMContentLoaded', function() {
+
+            var elems = document.querySelectorAll('.modal');
+            var instances = M.Modal.init(elems, {});
+
+            // Sidenav
             var elemsNav = document.querySelectorAll('.sidenav');
             var instancesNav = M.Sidenav.init(elemsNav, {});
 
+            // Tooltips
             var elemsTooltip = document.querySelectorAll('.tooltipped');
             instancesTooltip = M.Tooltip.init(elemsTooltip, {enterDelay:500,exitDelay:0});
         });
+
+        // ================ EVENTS ================
         
         // Set Lyrics into elements
         ipcRenderer.on('lyrics:show',function(e,item){
-            document.getElementById('loadingIcon').style.visibility = "hidden";
+
+            // Hide loading animation 
+            loadingIcon.style.visibility = "hidden";
+
+            // Set content
             songTitleContainer.innerText = item.full_title;
             lyricsContainer.innerHTML = item.lyrics;
         });
 
+        ipcRenderer.on('possible_songs:list',function(e,song_array){
+            console.log("reaches html file");
+            var index;
+            for (index = 0; index < song_array.length; ++index) {
+                console.log(song_array[index].result);
+                addChooseSongListElement(song_array[index].result.full_title);
+            }//TODO doesnt work yet?
+            
+        });
+
+        // Show error below loading animation
+        ipcRenderer.on('spotify:error',function(e,errorItem){
+            loadingIcon.style.visibility = "hidden";
+            errorTitle.innerText = errorItem.title;
+            errorText.innerText = errorItem.message;
+        });
+
+        // Reset error elements
+        ipcRenderer.on('spotify:running',function(e){
+            errorTitle.innerText = '';
+            errorText.innerText = '';
+        });
+
+        // ================ FUNCTIONS ================
+
+        function addChooseSongListElement(element){
+            var node = document.createElement("LI");
+            var textnode = document.createTextNode("item - "+element.result.name);
+            var link = document.createElement("A");
+            link.onclick(handleSongChange(element));
+            link.appendChild(textnode);
+            node.appendChild(link);
+            document.getElementById("choose-correct-song-list").appendChild(node);
+        }
+
+        function handleSongChange(element){
+            //TODO send song change event
+            console.log("working");
+            //ipcRenderer.send('song:changed_by_user');
+        }
+
         // Called when the refresh button is clicked
         function refreshSong(){
+
+            // Show loading animation
             document.getElementById('loadingIcon').style.visibility = "visible";
+
+            // Remove content
             songTitleContainer.innerText = '';
             lyricsContainer.innerHTML = '';
+
+            // Send event to load a new song from spotify helper
             ipcRenderer.send('song:refresh');
 
+            //TODO Need to get rid of the tooltip when the button is clicked, as materialize seems to bug out
             var instance = M.Tooltip.getInstance(document.getElementById('refresh-btn'));
             console.log(instance);
             instance.close();
         }
 
-        // Called when the "wrong song" button is clicked
+        // Called when the "wrong song" button is clicked, show popup to choose the right one
         function chooseSongWindow(){
             ipcRenderer.send('choosesong:open');
         }
