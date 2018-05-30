@@ -5,9 +5,6 @@
     <title>Spotify Lyrics</title>
     <link type="text/css" rel="stylesheet" href="assets/css/materialize.css"  media="screen,projection"/>
     <link type="text/css" rel="stylesheet" href="assets/icons/icons.css"  media="screen,projection"/>
-
-    <!-- TODO Replace link with local icons to make them available offline
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">-->
 </head>
 <body class="spot-background">
     
@@ -17,14 +14,16 @@
             <div  id="mainNav" class="nav-wrapper navbar-fixed spot-nav-background">
                 <a href="#" style="display: inline;" data-target="slide-out" class="sidenav-trigger"><i class="material-icons">menu</i></a>
                 <ul id="nav-mobile" class="right">
-                <li id="refresh-btn">
-                    <a onclick="refreshSong()" href="#"><i class="material-icons" >refresh</i></a>
-                </li>
-                <li>
-                    <a class="modal-trigger" href="#modal1"><i class="material-icons">error_outline</i></a>
-                </li>
-                <li><a href="#"></a></li>
-
+                    <li id="refresh-btn">
+                        <a onclick="refreshSong()" href="#"><i class="material-icons" >refresh</i></a>
+                    </li>
+                    <li>
+                        <a class="modal-trigger" href="#choose-song-modal"><i class="material-icons">error_outline</i></a>
+                    </li>
+                    <li>
+                        <a class="modal-trigger" href="#help-modal"><i class="material-icons">help_outline</i></a>
+                    </li>
+                    <li><a href="#"></a></li>
                 </ul>
             </div>
         </nav>
@@ -34,21 +33,30 @@
     <ul id="slide-out" class="sidenav grey darken-4">
             <li><div class="user-view">
                 <div class="background"></div>
-                <a href="#user"><img class="circle" src=""></a>
-                <a href="#name"><span class="white-text name">John Doe</span></a>
-                <a href="#email"><span class="white-text email">jdandturk@gmail.com</span></a>
+                <a href="#user"><img class="circle" src="" alt="placeholder"></a>
+                <a href="#name"><span class="white-text name">placeholder</span></a>
+                <a href="#email"><span class="white-text email">placeholder</span></a>
             </div></li>
-            <li><a href="#!"><i class="material-icons">cloud</i>Lyrics</a></li>
-            <li><a href="#!">Options</a></li>
-            <li><div class="divider teal darken-2"></div></li>
-            <li><a class="subheader">Subheader</a></li>
-            <li><a class="waves-effect" href="#!">Third Link With Waves</a></li>
+            <li><div class="divider spotify-green"></div></li>
+            <li><a class="white-text" href="#!"><i class="material-icons md-soft-light">format_align_center</i>Lyrics</a></li>
+            <li><a class="white-text" href="#!"><i class="material-icons md-soft-light">settings</i>Settings</a></li>
+            <li><a class="white-text" href="#!"><i class="material-icons md-soft-light">info</i>About</a></li>
+
     </ul>   
 
-    <!-- MODAL -->
-    <div id="modal1" class="modal">
+    <!-- HELP MODAL -->
+    <div id="help-modal" class="modal">
         <div class="modal-content">
-            <p style="-webkit-margin-before: 0;" class="flow-text white-text">Click on an item to change the currently displayed lyrics</p>
+            <p style="-webkit-margin-before: 0;" class="flow-text white-text">Yikes</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHOOSE SONG MODAL -->
+    <div id="choose-song-modal" class="modal">
+        <div class="modal-content">
+            <h6 style="-webkit-margin-before: 0;" class="white-text">Click on an item to change the currently displayed lyrics</h6>
+            <br/>
             <div class="collection" id="choose-correct-song-list">
             </div>
         </div>
@@ -56,73 +64,80 @@
 
     <!-- CONTENT -->
 
-<div id="main-scroll-content" class="scroll-content" style="height:617px;">
+    <!-- Outer div needed to have a dynamic scrollbar -->
+    <div id="main-scroll-content" class="scroll-content" style="height:617px;">
+        <div class="actual-content" style="overflow-y: scroll;">
 
-    <!-- TODO Scroll without nav, just content-->
-    <div class="actual-content" style="overflow-y: scroll;">
-
-        <!-- LYRICS CONTENT -->
-        <!-- TODO: Custom color-->
-        <div class="row" >
-            <div class="col s12 m12 l12">
-                <br>
-                <h4 id="songTitle" class="center center-block grey-text text-lighten-3"></h4>
-                <br>
-                <div id="lyricsDiv" class="center center-block grey-text text-lighten-3 flow-text spot-lyrics-div"></div>
-                <br>
+            <!-- LYRICS CONTENT -->
+            <!-- TODO: Custom color-->
+            <div class="row" >
+                <div class="col s12 m12 l12">
+                    <br>
+                    <h4 id="songTitle" class="center center-block grey-text text-lighten-3"></h4>
+                    <br>
+                    <div id="lyricsDiv" class="center center-block grey-text text-lighten-3 flow-text spot-lyrics-div"></div>
+                    <br>
+                </div>
             </div>
-        </div>
 
-        <!-- LOADING / ERROR PAGE -->
-        <div id="loadingErrorDiv" class="row">
-            <div class="col s12 m12 l12">
-                <!-- HOLY SHIT KILL ME. fixed bug where the scrollbar would do small jumps all the time, 
-                    turns out the loading icon is a rectangle that rotates which caused the page to change height all the time. 
-                    Fixed by adding a margin to the bottom.-->
+            <!-- LOADING / ERROR PAGE -->
+            <div id="loadingErrorDiv" class="row">
+                <div class="col s12 m12 l12">
 
-                <!-- LOADING -->
-                <div id="loadingIcon" class="center-block preloader-wrapper big active loading-icon">
-                    <div class="spinner-layer spinner-blue-only">
-                        <div class="circle-clipper left">
-                        <div class="circle"></div>
-                        </div><div class="gap-patch">
-                        <div class="circle"></div>
-                        </div><div class="circle-clipper right">
-                        <div class="circle"></div>
+                    <!-- LOADING -->
+                    <div id="loadingIcon" class="center-block preloader-wrapper big active loading-icon">
+                        <div class="spinner-layer spinner-blue-only">
+                            <div class="circle-clipper left">
+                            <div class="circle"></div>
+                            </div><div class="gap-patch">
+                            <div class="circle"></div>
+                            </div><div class="circle-clipper right">
+                            <div class="circle"></div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- ERROR -->
-                <!-- TODO: Add Error Icon instead of Loading Icon, change color to custom color-->
-                <div>
-                    <h5 id="errorTitle" class="center-align grey-text text-lighten-3"></h5>
-                    <h6 id="errorText" class="center-align grey-text text-lighten-3"></h6>
+                    <!-- ERROR -->
+                    <!-- TODO: Add Error Icon instead of Loading Icon, change color to custom color-->
+                    <div>
+                        <h5 id="errorTitle" class="center-align grey-text text-lighten-3"></h5>
+                        <h6 id="errorText" class="center-align grey-text text-lighten-3"></h6>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
     <!-- SCRIPTS -->
     <script>
+
+        // Electron
         const electron = require('electron');
         const {ipcRenderer} = electron;
-
+        
+        // MainWindow Lyrics Container
         const lyricsContainer = document.getElementById('lyricsDiv');
         const songTitleContainer = document.getElementById('songTitle');
 
+        // Loading and Error Container
         const loadingErrorDiv = document.getElementById('loadingErrorDiv');
         const loadingIcon = document.getElementById('loadingIcon');
         const errorTitle = document.getElementById('errorTitle');
         const errorText = document.getElementById('errorText');
         
+        // Scrollbar dependencies
         const mainScrollContent = document.getElementById('main-scroll-content');
         const mainNav = document.getElementById('mainNav');
 
         // Init scrollbar
         var newHeight = 640 - 22;
         mainScrollContent.style.height = ""+newHeight+"px";
+
+        // Modals
+        const chooseSongModal = document.getElementById('choose-song-modal');
+
+        // Choose Song Array
+        var songLyricsArray;
 
         // Initialize Materialize Elements
         document.addEventListener('DOMContentLoaded', function() {
@@ -153,9 +168,10 @@
 
         // Add every search result from genius.com to the list
         ipcRenderer.on('possible_songs:list',function(e,song_array){
+            songLyricsArray = song_array;
             var index;
             for (index = 0; index < song_array.length; ++index) {
-                addChooseSongListElement(song_array[index].result);
+                addChooseSongListElement(song_array[index].result,index);
             }
         });
 
@@ -181,11 +197,10 @@
 
         // ================ FUNCTIONS ================
 
-        function addChooseSongListElement(element){
+        function addChooseSongListElement(element,index){
             if(element == undefined) return;
             
             var node = document.createElement("A");
-            var name = document.createTextNode("  "+element.full_title);
 
             // Image
             var avatar = document.createElement("IMG");
@@ -193,24 +208,45 @@
             avatar.src = ""+element.header_image_url;
             avatar.style.verticalAlign = "middle";
             avatar.style.marginRight = "8px";
-            avatar.height = 80;
-            avatar.width = 80;
 
+            // Song name
             var title = document.createElement("SPAN");
-            title.innerText = element.full_title;
+            title.innerText = element.title;
             title.classList.add("title");
+            title.classList.add("white-text");
+
+            // Artist name
+            var artist = document.createElement("P");
+            artist.innerText = element.primary_artist.name;
+            artist.classList.add("white-text");
+            
+            // Click Event
+            node.href = "#!";
+            node.onclick = function (){ handleSongChange(index) };
+
 
             node.classList.add("collection-item");
+            node.classList.add("avatar");
             node.appendChild(avatar);
             node.appendChild(title);
-
+            node.appendChild(artist);
             document.getElementById("choose-correct-song-list").appendChild(node);
         }
 
-        function handleSongChange(element){
-            //TODO send song change event
-            console.log("working");
-            //ipcRenderer.send('song:changed_by_user');
+        function handleSongChange(index){
+            // Show loading animation
+            loadingErrorDiv.style.display = "block";
+            loadingIcon.style.visibility = "visible";
+
+            // Remove content
+            songTitleContainer.innerText = '';
+            lyricsContainer.innerHTML = '';
+
+            // Close modal window
+            var instance = M.Modal.getInstance(chooseSongModal);
+            instance.close();
+
+            ipcRenderer.send('song:changed_by_user',songLyricsArray[index]);
         }
 
         // Called when the refresh button is clicked

@@ -1,7 +1,7 @@
 {
   "name": "spotify-lyrics",
   "productName": "Spotify Lyrics",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Show lyrics to the song you're listening to on Spotify.",
   "main": "main.js",
   "scripts": {

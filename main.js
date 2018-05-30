@@ -4,7 +4,7 @@ const path = require('path');
 const SpotifyWebHelper = require('spotify-web-helper');
 const api = require('genius-api');
 const Lyricist = require('lyricist/node6');
-const configFile = require(path.resolve('config.js'));
+const configFile = require('./config.js');
 
 process.env.GENIUS_ACCESS_TOKEN = configFile.GENIUS_API_TOKEN;
 
@@ -16,6 +16,7 @@ const lyricist = new Lyricist(process.env.GENIUS_ACCESS_TOKEN);
 let mainWindow;
 
 var currentTrack;
+var currentHeight = 640;
 
 /*
 ===================================== WINDOWS =================================
@@ -26,7 +27,7 @@ app.on('ready', function(){
 
     mainWindow = new BrowserWindow({
         width: 1024, 
-        height: 640,
+        height: currentHeight,
         backgroundColor:'#181818',
         show: false,
         title:'Spotify Lyrics'
@@ -42,9 +43,13 @@ app.on('ready', function(){
         slashes: true
     }));
 
+    // Send current height on resize to adjust scrollbar
     mainWindow.on('resize', function(e){
-        console.log(mainWindow.getSize()[1]);
-        mainWindow.webContents.send('window:resize', mainWindow.getSize()[1]);
+        var height = mainWindow.getSize()[1];
+        if(currentHeight != height){
+            currentHeight = height;
+            mainWindow.webContents.send('window:resize', height);
+        }
     })
 
     // Quit App when closed
@@ -70,8 +75,8 @@ ipcMain.on('choosesong:open', function(e){
     chooseSongWindow();
 });
 
-ipcMain.on('song:changed_by_user',function(e){
-    updateShownLyrics(e);
+ipcMain.on('song:changed_by_user',function(e,song_lyric){
+    updateShownLyrics(song_lyric);
 });
 
 /*
@@ -107,44 +112,6 @@ helper.player.on('error', err => {
     }
     console.log("error lol");
 });
-    //dialog.showErrorBox("Error with Spotify Web Helper", err);
-    //console.log(helper.);
-/*
-    console.log('BEGIN -------------------')
-
-    if(helper.status == null){
-        console.log('Helper cant be initialized');
-        console.log(helper.status);
-        mainWindow.webContents.send('spotify:error', {message: 'You\'re not connected to the internet',title: ''})
-
-    }else{        
-        if(helper.status.online){
-            console.log('STATUS: Online');
-        }else{
-            console.log('STATUS: Offline');
-        }
-
-        if(helper.status.running){
-            console.log('STATUS: Running');
-        }else{
-            console.log('STATUS: Not Running');
-        }
-    }
-
-    console.log('END --------------------')
-
-    if(err.message.match('No port found in range')){
-        console.log('MATCHED');
-    }*/
-
-    /*if (err.message.match(/No user logged in/)) {
-      // also fires when Spotify client quits
-      console.log('ERROR: not logged in');
-    } else {
-      // other errors: /Cannot start Spotify/ and /Spotify is not installed/
-      console.log('ERROR: cannot start / installed');
-    }*/
-
 
 helper.player.on('ready', () => {
 
@@ -191,7 +158,7 @@ function updatePlayingSong(track_obj) {
     if(track_obj==undefined){
         track = helper.status.track;
     }else{
-        track = track_obj;
+        updateShownLyrics(track_obj);
     }
     currentTrack = track;
 
