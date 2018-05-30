@@ -14,6 +14,8 @@ const lyricist = new Lyricist(process.env.GENIUS_ACCESS_TOKEN);
 
 let mainWindow;
 
+var currentTrack;
+
 /*
 ===================================== WINDOWS =================================
 */
@@ -98,7 +100,6 @@ ipcMain.on('choosesong:open', function(e){
 });
 
 ipcMain.on('song:changed_by_user',function(e){
-    console.log("working ---------------------------");
     updateShownLyrics(e);
 });
 
@@ -107,12 +108,10 @@ ipcMain.on('song:changed_by_user',function(e){
 */
 
 helper.player.on('error', err => {
-    console.log('------- ERROR-------------');
-
     // TODO Check if internet is working
 
     // If = undefined, spotify is not running
-    if(err.message  == undefined){
+    if(err.message == undefined){
         mainWindow.webContents.send('spotify:error', {message: 'Spotify is not running',title: 'Error'});
     }else{
         if(helper.status == null){
@@ -120,9 +119,10 @@ helper.player.on('error', err => {
         }else{
             //TODO when does this happen?
             console.log('helper is not null');
+            console.log(err);
         }
     }
-
+});
     //dialog.showErrorBox("Error with Spotify Web Helper", err);
     //console.log(helper.);
 /*
@@ -160,7 +160,7 @@ helper.player.on('error', err => {
       // other errors: /Cannot start Spotify/ and /Spotify is not installed/
       console.log('ERROR: cannot start / installed');
     }*/
-});
+
 
 helper.player.on('ready', () => {
 
@@ -168,37 +168,25 @@ helper.player.on('ready', () => {
     mainWindow.webContents.send('spotify:running');
   
     helper.player.on('track-will-change', function(track){ 
-        updatePlayingSong(track) 
+        if(track != currentTrack){
+            updatePlayingSong(track) 
+            console.log("track change");
+        }
     });
 
-     //Playback events
-     
+    //Playback events
     helper.player.on('play', function(){ 
+        console.log("play");
         updatePlayingSong(undefined) 
     });
     
-    helper.player.on('pause', () => { console.log('pause') }).catch(function(error) {
-        console.error(error);
-    });
-    helper.player.on('seek', newPosition => { console.log('seek') }).catch(function(error) {
-        console.error(error);
-    });
-    helper.player.on('end', () => { console.log('end') }).catch(function(error) {
-        console.error(error);
-    });
-    helper.player.on('track-will-change', track => { console.log('track-will-change') }).catch(function(error) {
-        console.error(error);
-    });
-    helper.player.on('status-will-change', status => {console.log('status-will-change')}).catch(function(error) {
-        console.error(error);
-    });
-  
-    //updatePlayingSong(undefined);
-});
+    helper.player.on('pause', () => { console.log('pause') });
 
-// Try to run updatePlayingSong only once
-helper.player.once('ready',()=>{
-    updatePlayingSong(undefined);
+    helper.player.on('seek', newPosition => { console.log('seek') });
+
+    helper.player.on('end', () => { console.log('end') });
+
+    helper.player.on('status-will-change', status => {});
 });
 
 // Receive currently playing track from spotify helper and look it up on genius, send results via ipc
@@ -217,9 +205,12 @@ function updatePlayingSong(track_obj) {
     }else{
         track = track_obj;
     }
+    currentTrack = track;
+
+    console.log("Searching for: "+track.track_resource.name+ " / "+track.artist_resource.name);
 
     // Search for track name + artist name
-    genius.search(track.track_resource.name + ' - ' + track.artist_resource.name ).then(function(response) {
+    genius.search(track.track_resource.name + ' ' + track.artist_resource.name ).then(function(response) {
 
         //TODO Send response to html to display possible songs
         mainWindow.webContents.send('possible_songs:list', response.hits);
@@ -227,14 +218,6 @@ function updatePlayingSong(track_obj) {
         //TODO test if working with internet connection
         updateShownLyrics(response.hits[0]);
 
-        /*// Use the first results id to scrape the lyrics with lyricist
-        var promise1 = lyricist.song(response.hits[0].result.id,{fetchLyrics: true}).then(function(song) {
-            mainWindow.webContents.send('lyrics:show', song)
-        });
-        promise1.catch(function(error) {
-            console.log(error);
-            dialog.showErrorBox("Error in Lyricist scraping", error);
-        });*/
     }).catch(function(error) {
         console.error(error);
         dialog.showErrorBox("Error in genius search", error);

@@ -3450,13 +3450,13 @@ table span.badge {
   margin-left: auto;
 }
 
-/* This is needed for some mobile phones to display the Google Icon font properly */
+/* This is needed for some mobile phones to display the Google Icon font properly 
 .material-icons {
   text-rendering: optimizeLegibility;
   -webkit-font-feature-settings: 'liga';
      -moz-font-feature-settings: 'liga';
           font-feature-settings: 'liga';
-}
+}*/
 
 .container {
   margin: 0 auto;
@@ -5808,7 +5808,7 @@ button.btn-floating {
 .modal .modal-footer {
   border-radius: 0 0 2px 2px;
   background-color: #fafafa;
-  padding: 4px 6px;
+  padding: 4px 4px;
   height: 56px;
   width: 100%;
   text-align: right;
