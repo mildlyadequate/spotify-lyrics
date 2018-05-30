@@ -3,3 +3,8 @@
 
 assets/* linguist-vendored
 
+/installers             export-ignore
+/release-builds         export-ignore
+/node_modules           export-ignore
+.gitattributes          export-ignore
+.gitignore              export-ignore
