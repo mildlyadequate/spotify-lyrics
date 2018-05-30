@@ -76,6 +76,7 @@ ipcMain.on('choosesong:open', function(e){
 });
 
 ipcMain.on('song:changed_by_user',function(e,song_lyric){
+    currentTrack = song_lyric;
     updateShownLyrics(song_lyric);
 });
 
@@ -86,7 +87,6 @@ ipcMain.on('song:changed_by_user',function(e,song_lyric){
 helper.player.on('error', err => {
     // TODO Check if internet is working
     console.log("3");
-
 
     // If = undefined, spotify is not running
     if(err.message == undefined){
@@ -124,14 +124,12 @@ helper.player.on('ready', () => {
 
     helper.player.on('track-will-change', function(track){ 
         if(track != currentTrack){
-            updatePlayingSong(track) 
-            console.log("track change");
+            updatePlayingSong(undefined) 
         }
     });
 
     //Playback events
     helper.player.on('play', function(){ 
-        console.log("play");
         updatePlayingSong(undefined) 
     });
     
@@ -143,6 +141,10 @@ helper.player.on('ready', () => {
 
     helper.player.on('status-will-change', status => {});
 });
+
+/*
+================================ FUNCTIONS ===========================
+*/
 
 // Receive currently playing track from spotify helper and look it up on genius, send results via ipc
 function updatePlayingSong(track_obj) {
@@ -158,7 +160,9 @@ function updatePlayingSong(track_obj) {
     if(track_obj==undefined){
         track = helper.status.track;
     }else{
+        console.log("NO ERROR YET "+track_obj);
         updateShownLyrics(track_obj);
+        return;
     }
     currentTrack = track;
 
@@ -181,10 +185,14 @@ function updatePlayingSong(track_obj) {
 
 function updateShownLyrics(element){
 
+    if(element == undefined){
+        dialog.showErrorBox("yikes. weird error occured", error);
+    }
+
     // Use the first results id to scrape the lyrics with lyricist
     lyricist.song(element.result.id,{fetchLyrics: true}).then(function(song) {
         mainWindow.webContents.send('spotify:running');
-        mainWindow.webContents.send('lyrics:show', song)
+        mainWindow.webContents.send('lyrics:show', song);
     }).catch(function(error) {
         console.log(error);
         dialog.showErrorBox("Error in Lyricist scraping", error);
