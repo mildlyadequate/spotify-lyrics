@@ -1,10 +1,10 @@
 # Auto detect text files and perform LF normalization
 * text=auto
 
-assets/* linguist-vendored
-
+assets/*                linguist-vendored
 installers/*            linguist-vendored
 release-builds/*        linguist-vendored
 node_modules/*          linguist-vendored
 .gitattributes          linguist-vendored
 .gitignore              linguist-vendored
+node_modules/*          export-ignore
