@@ -7,4 +7,4 @@ release-builds/*        linguist-vendored
 node_modules/*          linguist-vendored
 .gitattributes          linguist-vendored
 .gitignore              linguist-vendored
-node_modules/*          export-ignore
+node_modules/*          linguist-documentation
