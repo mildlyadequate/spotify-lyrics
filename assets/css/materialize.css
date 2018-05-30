@@ -4399,14 +4399,6 @@ nav .sidenav-trigger i {
   line-height: 56px;
 }
 
-nav .brand-logo {
-  /*position: absolute;
-  color: #fff;
-  display: inline-block;
-  font-size: 2.1rem;
-  padding: 0;*/
-}
-
 nav .brand-logo.center {
   left: 50%;
   -webkit-transform: translateX(-50%);
@@ -6901,10 +6893,6 @@ textarea.materialize-textarea {
   pointer-events: none;
 }
 
-[type="checkbox"] {
-  /* checkbox aspect */
-}
-
 [type="checkbox"] + span:not(.lever) {
   position: relative;
   padding-left: 35px;
@@ -9124,10 +9112,6 @@ input[type=range].focused:focus:not(.active)::-ms-thumb {
 ::-webkit-scrollbar {
   width: 15px;
   background-color: #181818;
-}
-
-::-webkit-scrollbar-track {
-
 }
 
 ::-webkit-scrollbar-thumb {
