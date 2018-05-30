@@ -151,11 +151,12 @@
             lyricsContainer.innerHTML = item.lyrics;
         });
 
+        // Add every search result from genius.com to the list
         ipcRenderer.on('possible_songs:list',function(e,song_array){
             var index;
             for (index = 0; index < song_array.length; ++index) {
                 addChooseSongListElement(song_array[index].result);
-            }//TODO doesnt work yet?
+            }
         });
 
         // Show error below loading animation
@@ -186,6 +187,7 @@
             var node = document.createElement("A");
             var name = document.createTextNode("  "+element.full_title);
 
+            // Image
             var avatar = document.createElement("IMG");
             avatar.classList.add("circle");
             avatar.src = ""+element.header_image_url;
@@ -199,7 +201,6 @@
             title.classList.add("title");
 
             node.classList.add("collection-item");
-
             node.appendChild(avatar);
             node.appendChild(title);
 

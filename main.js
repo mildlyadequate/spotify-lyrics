@@ -4,8 +4,9 @@ const path = require('path');
 const SpotifyWebHelper = require('spotify-web-helper');
 const api = require('genius-api');
 const Lyricist = require('lyricist/node6');
+const configFile = require(path.resolve('config.js'));
 
-process.env.GENIUS_ACCESS_TOKEN = '49mS8qrybwUvBUVRCMC3xAQMFxcrZfjV-10oOp6zDgtPtzQyjxdsnSq15GqkuQgk';
+process.env.GENIUS_ACCESS_TOKEN = configFile.GENIUS_API_TOKEN;
 
 const{app,BrowserWindow,Menu, ipcMain, dialog} = electron;
 const helper = SpotifyWebHelper();
@@ -23,7 +24,6 @@ var currentTrack;
 // Listen for app to be ready
 app.on('ready', function(){
 
-    // Create new window
     mainWindow = new BrowserWindow({
         width: 1024, 
         height: 640,
