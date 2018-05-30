@@ -4,3 +4,4 @@
 installers/* linguist-vendored
 release-builds/* linguist-vendored
 node_modules/* linguist-vendored
+node_modules/electron-packager/* linguist-vendored
