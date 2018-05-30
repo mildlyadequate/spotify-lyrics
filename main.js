@@ -42,6 +42,11 @@ app.on('ready', function(){
         slashes: true
     }));
 
+    mainWindow.on('resize', function(e){
+        console.log(mainWindow.getSize()[1]);
+        mainWindow.webContents.send('window:resize', mainWindow.getSize()[1]);
+    })
+
     // Quit App when closed
     mainWindow.on('closed', function(){
         app.quit();
@@ -50,40 +55,6 @@ app.on('ready', function(){
     // Remove Menu Bar
    // mainWindow.setMenu(null);
 });
-
-// Handle create chooseSong Window
-function chooseSongWindow(){
-
-    // Create new window
-    let chooseSongWindow = new BrowserWindow({
-        parent: mainWindow,
-        modal: true,
-        width:300,
-        height:500,
-        frame: false,
-        title:'Choose the correct song',
-        show: false
-    });
-
-    // Load html into window
-    chooseSongWindow.loadURL(url.format({
-        pathname: path.join(__dirname, 'chooseSong.html'),
-        protocol:'file:',
-        slashes: true
-    }));
-
-    chooseSongWindow.once('ready-to-show', ()=>{
-        chooseSongWindow.show();
-    });
-
-    // Garbage Collection handle
-    chooseSongWindow.on('close',function(){
-        chooseSongWindow = null;
-    });
-
-    // Remove Menu Bar
-    chooseSongWindow.setMenu(null);
-}
 
 /*
 ===================================== IPC =================================
@@ -109,19 +80,32 @@ ipcMain.on('song:changed_by_user',function(e){
 
 helper.player.on('error', err => {
     // TODO Check if internet is working
+    console.log("3");
+
 
     // If = undefined, spotify is not running
     if(err.message == undefined){
+        console.log("1");
         mainWindow.webContents.send('spotify:error', {message: 'Spotify is not running',title: 'Error'});
+    }if (err.message.match(/No user logged in/)) {
+        console.log("2");
+        console.log("no user logged in");
     }else{
+        console.log("3");
+
         if(helper.status == null){
+            console.log("4");
+
             mainWindow.webContents.send('spotify:error', {message: 'You\'re not connected to the internet' ,title: 'Error'});
         }else{
+            console.log("5");
+
             //TODO when does this happen?
             console.log('helper is not null');
             console.log(err);
         }
     }
+    console.log("error lol");
 });
     //dialog.showErrorBox("Error with Spotify Web Helper", err);
     //console.log(helper.);
@@ -167,6 +151,10 @@ helper.player.on('ready', () => {
     // If player works, internet and spotify work, so we can remove any error messages that might be showing
     mainWindow.webContents.send('spotify:running');
   
+    if(helper.status.playing == false){
+        mainWindow.webContents.send('spotify:error', {message: 'No song is playing' ,title: ''});
+    }
+
     helper.player.on('track-will-change', function(track){ 
         if(track != currentTrack){
             updatePlayingSong(track) 
@@ -228,6 +216,7 @@ function updateShownLyrics(element){
 
     // Use the first results id to scrape the lyrics with lyricist
     lyricist.song(element.result.id,{fetchLyrics: true}).then(function(song) {
+        mainWindow.webContents.send('spotify:running');
         mainWindow.webContents.send('lyrics:show', song)
     }).catch(function(error) {
         console.log(error);

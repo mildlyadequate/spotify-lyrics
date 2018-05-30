@@ -5,19 +5,40 @@
  */
 
 /*
+CUSTOM COLORS:
+  #121212 - Darkest Grey, Sidebar
+  #181818 - Dark Grey, Background
+  #1c1c1c - Dark(ish) Grey, Dark Button
+  #404040 - Medium Grey, subtle add button
+  #535353 - Medium Grey, Scrollbar
+  #282828 - Medium Grey, Modal Background
+  #1db954 - Spotify Green, Accent
+  #4687d6 - Spotify Blue, Accent
+
+TODO Electron doesnt support CSS Variables (yet?) 
+:root{
+  --darkest-grey: #121212;
+  --dark-grey: #181818;
+  --darkish-grey: #1c1c1c;
+  --medium-grey-a: #282828;
+  --medium-grey-b: #404040;
+  --medium-grey-c: #535353;
+  --spotify-green: #1db954;
+  --spotify-blue: #4687d6;
+}
+
+/*
 CUSTOM CHANGES
 */
 
 .spot-background{
   background:#181818;
+  overflow:hidden;
+  height:100%;
 }
 
 .spot-nav-background{
-  background-color:#282828;
-}
-
-.spot-permanent-scrollbar{
-  overflow-y:scroll;
+  background-color: #282828;
 }
 
 .spot-lyrics-div{
@@ -27,6 +48,26 @@ CUSTOM CHANGES
 .loading-icon{
   display:block;
   margin-bottom: 25px;
+}
+
+.scroll-content{
+  display: flex;
+  overflow: hidden;
+  margin-top: -100px;
+  padding-top: 100px;
+  position: relative;
+  width: 100%;
+  backface-visibility: hidden;
+  will-change: overflow;
+}
+
+.actual-content{
+  overflow: auto;
+  height: auto;
+  width: 100%;
+  /*padding: .5rem;*/
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: none;
 }
 
 /*
@@ -3110,18 +3151,18 @@ td, th {
 
 .collection {
   margin: 0.5rem 0 1rem 0;
-  border: 1px solid #e0e0e0;
+  background-color: #282828;
+  border: 1px solid #404040;
   border-radius: 2px;
   overflow: hidden;
   position: relative;
 }
 
 .collection .collection-item {
-  background-color: #fff;
   line-height: 1.5rem;
   padding: 10px 20px;
   margin: 0;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid #404040;
 }
 
 .collection .collection-item.avatar {
@@ -3184,7 +3225,7 @@ td, th {
 }
 
 .collection a.collection-item:not(.active):hover {
-  background-color: #ddd;
+  background-color: #1c1c1c;
 }
 
 .collection.with-header .collection-header {
@@ -5777,14 +5818,19 @@ button.btn-floating {
   position: fixed;
   left: 0;
   right: 0;
-  background-color: #fafafa;
+  background-color: #282828;
   padding: 0;
   max-height: 70%;
   width: 55%;
   margin: auto;
   overflow-y: auto;
   border-radius: 2px;
+  border-color: rgb(31, 255, 2);
   will-change: top, opacity;
+}
+
+.modal:focus {
+  outline-width: 0px;
 }
 
 @media only screen and (max-width: 992px) {
@@ -9075,15 +9121,15 @@ input[type=range].focused:focus:not(.active)::-ms-thumb {
 */
 
 /* Scrollbars */
-body::-webkit-scrollbar {
+::-webkit-scrollbar {
   width: 15px;
   background-color: #181818;
 }
 
-body::-webkit-scrollbar-track {
+::-webkit-scrollbar-track {
 
 }
 
-body::-webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb {
   background-color: #535353;
 }

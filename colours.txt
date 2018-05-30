@@ -1,0 +1,24 @@
+CUSTOM COLORS:
+  #121212 - Darkest Grey, Sidebar
+  #181818 - Dark Grey, Background
+  #1c1c1c - Dark(ish) Grey, Dark Button
+  #404040 - Medium Grey, subtle add button
+  #535353 - Medium Grey, Scrollbar
+  #282828 - Medium Grey, Modal Background
+  #1db954 - Spotify Green, Accent
+  #4687d6 - Spotify Blue, Accent
+
+=============================================
+
+Custom CSS
+
+:root{
+  --darkest-grey: #121212;
+  --dark-grey: #181818;
+  --darkish-grey: #1c1c1c;
+  --medium-grey-a: #282828;
+  --medium-grey-b: #404040;
+  --medium-grey-c: #535353;
+  --spotify-green: #1db954;
+  --spotify-blue: #4687d6;
+}
