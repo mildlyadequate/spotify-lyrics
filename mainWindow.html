@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- UPDATED -->
 <html style="height:100%">
 <head>
     <title>Spotify Lyrics</title>
@@ -12,16 +11,16 @@
     <div class="navbar-fixed">
         <nav>
             <div  id="mainNav" class="nav-wrapper navbar-fixed spot-nav-background">
-                <a href="#" style="display: inline;" data-target="slide-out" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+                <a href="#" style="display: inline;" data-target="slide-out" class="sidenav-trigger nav-menu-button"><i class="material-icons">menu</i></a>
                 <ul id="nav-mobile" class="right">
                     <li id="refresh-btn">
                         <a onclick="refreshSong()" href="#"><i class="material-icons" >refresh</i></a>
                     </li>
+                    <li id="remove-btn">
+                            <a onclick="clearLyrics()" href="#"><i class="material-icons" >clear</i></a>
+                        </li>
                     <li>
-                        <a class="modal-trigger" href="#choose-song-modal"><i class="material-icons">error_outline</i></a>
-                    </li>
-                    <li>
-                        <a class="modal-trigger" href="#help-modal"><i class="material-icons">help_outline</i></a>
+                        <a class="modal-trigger" href="#choose-song-modal"><i class="material-icons">warning</i></a>
                     </li>
                     <li><a href="#"></a></li>
                 </ul>
@@ -40,7 +39,7 @@
             <li><div class="divider spotify-green"></div></li>
             <li><a class="white-text" href="#!"><i class="material-icons md-soft-light">format_align_center</i>Lyrics</a></li>
             <li><a class="white-text" href="#!"><i class="material-icons md-soft-light">settings</i>Settings</a></li>
-            <li><a class="white-text" href="#!"><i class="material-icons md-soft-light">info</i>About</a></li>
+            <li><a class="white-text modal-trigger" href="#help-modal"><i class="material-icons md-soft-light">info</i>About</a></li>
 
     </ul>   
 
@@ -101,7 +100,7 @@
                     <!-- TODO: Add Error Icon instead of Loading Icon, change color to custom color-->
                     <div>
                         <h5 id="errorTitle" class="center-align grey-text text-lighten-3"></h5>
-                        <h6 id="errorText" class="center-align grey-text text-lighten-3"></h6>
+                        <h6 id="errorText" class="center-align grey-text text-lighten-3">Initializing</h6>
                     </div>
                 </div>
             </div>
@@ -164,6 +163,13 @@
             // Set content
             songTitleContainer.innerText = item.full_title;
             lyricsContainer.innerHTML = item.lyrics;
+
+            // Get toast DOM Element, get instance, then call dismiss function
+            var toastElement = document.querySelector('.toast');
+            if(toastElement!=null){
+                var toastInstance = M.Toast.getInstance(toastElement);
+                toastInstance.dismiss();
+            }
         });
 
         // Add every search result from genius.com to the list
@@ -195,7 +201,31 @@
             mainScrollContent.style.height = ""+newHeight+"px";
         });
 
+        // Show song lyrics loading Toast
+        ipcRenderer.on('toast:lyrics-loading',function(e,song){
+            var toastHTML = '<span style="margin-right:14px;">Loading <a class="spotify-green-text">'+song.track_resource.name+' by '+song.artist_resource.name+'</a></span><div class="preloader-wrapper small active"><div class="spinner-layer spinner-green-only"><div class="circle-clipper left"><div class="circle"></div></div><div class="gap-patch"><div class="circle"></div></div><div class="circle-clipper right"><div class="circle"></div></div></div></div>';
+            M.toast({html: toastHTML, displayLength: 30000});
+        });
+
+        // Status update
+        ipcRenderer.on('status:change',function(e,status){
+            errorText.innerText = status;
+        });
+        
         // ================ FUNCTIONS ================
+
+        function clearLyrics(){
+
+            // Remove content
+            songTitleContainer.innerText = '';
+            lyricsContainer.innerHTML = '';
+
+            loadingErrorDiv.style.display = "block";
+            errorTitle.innerText = '';
+            errorText.innerText = 'Waiting for user or next song';
+
+            ipcRenderer.send('lyrics:cleared');
+        }
 
         function addChooseSongListElement(element,index){
             if(element == undefined) return;
@@ -259,6 +289,10 @@
             // Remove content
             songTitleContainer.innerText = '';
             lyricsContainer.innerHTML = '';
+
+            // Remove Error Msgs
+            errorTitle.innerText = '';
+            errorText.innerText = '';
 
             // Send event to load a new song from spotify helper
             ipcRenderer.send('song:refresh');

@@ -1,3 +1,11 @@
+ //handle setupevents as quickly as possible
+ const setupEvents = require('./installers/setupEvents')
+ if (setupEvents.handleSquirrelEvent()) {
+    // squirrel event handled and app will exit in 1000ms, so don't do anything else
+    return;
+ }
+
+
 const electron = require('electron');
 const url = require('url');
 const path = require('path');
@@ -67,7 +75,7 @@ app.on('ready', function(){
 
 // Catch item:add
 ipcMain.on('song:refresh', function(e){
-    updatePlayingSong();
+    updatePlayingSong(undefined);
 });
 
 // Catch choosesong:open
@@ -76,9 +84,14 @@ ipcMain.on('choosesong:open', function(e){
 });
 
 ipcMain.on('song:changed_by_user',function(e,song_lyric){
-    currentTrack = song_lyric;
     updateShownLyrics(song_lyric);
 });
+
+// When lyrics are cleared, need to set current song to undefined in case the last song comes on again (if statement would block the request)
+ipcMain.on('lyrics:cleared',function(e){
+    currentTrack = undefined;
+});
+
 
 /*
 ================================ SPOTIFY HELPER ===========================
@@ -86,7 +99,7 @@ ipcMain.on('song:changed_by_user',function(e,song_lyric){
 
 helper.player.on('error', err => {
     // TODO Check if internet is working
-    console.log("3");
+    // TODO no message when spotify is running but not playing a song
 
     // If = undefined, spotify is not running
     if(err.message == undefined){
@@ -94,43 +107,43 @@ helper.player.on('error', err => {
         mainWindow.webContents.send('spotify:error', {message: 'Spotify is not running',title: 'Error'});
     }if (err.message.match(/No user logged in/)) {
         console.log("2");
-        console.log("no user logged in");
+        mainWindow.webContents.send('spotify:error', {message: 'No user is logged in to Spotify' ,title: 'Error'});
     }else{
         console.log("3");
-
         if(helper.status == null){
             console.log("4");
 
             mainWindow.webContents.send('spotify:error', {message: 'You\'re not connected to the internet' ,title: 'Error'});
         }else{
             console.log("5");
-
+            mainWindow.webContents.send('spotify:error', {message: 'Unknown error occured' ,title: 'Error'});
             //TODO when does this happen?
-            console.log('helper is not null');
             console.log(err);
         }
     }
-    console.log("error lol");
+    console.log("6");
 });
 
 helper.player.on('ready', () => {
 
     // If player works, internet and spotify work, so we can remove any error messages that might be showing
     mainWindow.webContents.send('spotify:running');
-  
+    
     if(helper.status.playing == false){
         mainWindow.webContents.send('spotify:error', {message: 'No song is playing' ,title: ''});
     }
 
     helper.player.on('track-will-change', function(track){ 
+        console.log("1 track-will-change");
         if(track != currentTrack){
-            updatePlayingSong(undefined) 
+            mainWindow.webContents.send('toast:lyrics-loading',track);
+            updatePlayingSong(track); 
         }
     });
 
     //Playback events
     helper.player.on('play', function(){ 
-        updatePlayingSong(undefined) 
+        updatePlayingSong(undefined); 
     });
     
     helper.player.on('pause', () => { console.log('pause') });
@@ -139,7 +152,7 @@ helper.player.on('ready', () => {
 
     helper.player.on('end', () => { console.log('end') });
 
-    helper.player.on('status-will-change', status => {});
+    helper.player.on('status-will-change', status => { console.log('2 status-will-change') });
 });
 
 /*
@@ -147,34 +160,37 @@ helper.player.on('ready', () => {
 */
 
 // Receive currently playing track from spotify helper and look it up on genius, send results via ipc
-function updatePlayingSong(track_obj) {
+function updatePlayingSong(spotify_track) {
 
     // If spotify is not running/doesn't have internet connection =null
     if(helper.status===null){
-        dialog.showErrorBox("Connection Error", "Can't connect to spotify");
+        mainWindow.webContents.send('spotify:error', {message: 'Can\'t connect to Spotify',title: 'Error'});
         return;
     }
 
+    // Status update
+    mainWindow.webContents.send('status:change', 'Getting song info from Spotify');
+
     // Receive track object from spotify web helper (either through parameters on method or straight from helper.status)
     var track;
-    if(track_obj==undefined){
+    if(spotify_track==undefined){
         track = helper.status.track;
     }else{
-        console.log("NO ERROR YET "+track_obj);
-        updateShownLyrics(track_obj);
-        return;
+        track = spotify_track;
     }
     currentTrack = track;
 
     console.log("Searching for: "+track.track_resource.name+ " / "+track.artist_resource.name);
 
+    // Status update
+    mainWindow.webContents.send('status:change', 'Searching for "'+track.track_resource.name+'" on Genius.com');
+
     // Search for track name + artist name
+    //TODO search for live songs doesnt work, filter out 'live'
     genius.search(track.track_resource.name + ' ' + track.artist_resource.name ).then(function(response) {
 
-        //TODO Send response to html to display possible songs
         mainWindow.webContents.send('possible_songs:list', response.hits);
 
-        //TODO test if working with internet connection
         updateShownLyrics(response.hits[0]);
 
     }).catch(function(error) {
@@ -183,14 +199,17 @@ function updatePlayingSong(track_obj) {
     });
 }
 
-function updateShownLyrics(element){
+function updateShownLyrics(genius_lyrics){
 
-    if(element == undefined){
+    if(genius_lyrics == undefined){
         dialog.showErrorBox("yikes. weird error occured", error);
     }
 
+    // Status update
+    mainWindow.webContents.send('status:change', 'Scraping lyrics from Genius.com');
+
     // Use the first results id to scrape the lyrics with lyricist
-    lyricist.song(element.result.id,{fetchLyrics: true}).then(function(song) {
+    lyricist.song(genius_lyrics.result.id,{fetchLyrics: true}).then(function(song) {
         mainWindow.webContents.send('spotify:running');
         mainWindow.webContents.send('lyrics:show', song);
     }).catch(function(error) {

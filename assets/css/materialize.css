@@ -83,6 +83,17 @@ CUSTOM CHANGES
   -ms-overflow-style: none;
 }
 
+.nav-menu-button{
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.nav-menu-button:hover{
+  /*Spotify Green*/
+  color: #1db954;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
 /*
 MATERIALIZE DEFAULT CLASSES
 */
@@ -4497,6 +4508,11 @@ nav ul a:hover {
   background-color: rgba(0, 0, 0, 0.1);
 }
 
+nav ul a:hover > .material-icons{
+  /*Spotify Green*/
+  color: #1db954;
+}
+
 nav ul.left {
   float: left;
 }
@@ -5043,8 +5059,8 @@ small {
 
 @media only screen and (min-width: 993px) {
   #toast-container {
-    top: 10%;
-    right: 7%;
+    top: 14%;
+    right: 4%;
     max-width: 86%;
   }
 }
@@ -5826,8 +5842,9 @@ button.btn-floating {
   right: 0;
   background-color: #282828;
   padding: 0;
-  max-height: 70%;
-  width: 55%;
+  max-height: 85%;
+  top: 0%;
+  width: 70%;
   margin: auto;
   overflow-y: auto;
   border-radius: 2px;
@@ -5836,7 +5853,8 @@ button.btn-floating {
 }
 
 .modal:focus {
-  outline-width: 0px;
+  outline-width: 1px;
+  outline-color: #1db954;
 }
 
 @media only screen and (max-width: 992px) {
