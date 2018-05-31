@@ -5,7 +5,7 @@ Desktop application based on Electron that shows lyrics to songs you play on Spo
 
 ### Download
 
-Download ZIP file [here](https://github.com/mildlyadequate/spotify-lyrics/releases/download/v0.2.0-alpha/spotify-lyrics-win32-ia32.zip)
+Download ZIP file [here](https://github.com/mildlyadequate/spotify-lyrics/releases/download/v0.2.1-alpha/spotify-lyrics-win32-ia32.zip)
 
 ### Start
 
