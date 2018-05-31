@@ -1,5 +1,6 @@
 - icon buttons locally available in case of no internet connection (should be working, needs testing)
 - choose correct song button / popup
+- changing song / spamming next song on spotify breaks the app
 - Error Handling: 
 	-> First: Check for internet connection
 	-> Then:
