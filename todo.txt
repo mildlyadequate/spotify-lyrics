@@ -1,20 +1,23 @@
 TODO:
-- choose correct song button / popup
-- check for internet connection
-- sidebar with current playing track information from spotify
-- let the user locally save certain spotify song / lyric combinations (via spotify song id and genius id) to permanently fix some wrong song recognitions
-- additional lyrics api as alternative to genius.com
+#T1 choose correct song button / popup
+#T2 check for internet connection
+#T3 sidebar with current playing track information from spotify
+	#T3.1 Settings / About pages
+#T4 let the user locally save certain spotify song / lyric combinations (via spotify song id and genius id) to permanently fix some wrong song recognitions
+#T5 additional lyrics api as alternative to genius.com
+#T6 ...
 
 PROBLEMS:
-- searching for songs with extra tags in their titles (such as '- live') are giving wrong results or don't work at all
-- rare bug where (korean?) songs crash???
-- Related to spamming next song the notification toast that says "loading ..." also breaks
+#B4 searching for songs with extra tags in their titles (such as '- live') are giving wrong results or don't work at all
+#B5 rare bug where (korean?) songs crash???
+#B6 Related to spamming next song the notification toast that says "loading ..." also breaks
+#B7 ...
 
 LONG-TERM-PROBLEMS:
--> Spamming next song in spotify doesnt break the app anymore but the automatic lyrics changing gets confused.
+#B3 Spamming next song in spotify doesnt break the app anymore but the automatic lyrics changing gets confused.
 	- Need to find a way to cancel the function 'updatePlayingSong()' when the track has changed another time
         - Idea: Multithreading: https://electronjs.org/docs/tutorial/multithreading with web workers
 
 FIXED:
-- update shown song function is being called 3 times initially???
-- button icons available without internet connection
+#B1 update shown song function is being called 3 times initially???
+#B2 button icons available without internet connection
