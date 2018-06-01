@@ -1,16 +1,20 @@
-- icon buttons locally available in case of no internet connection (should be working, needs testing)
+TODO:
 - choose correct song button / popup
-- changing song / spamming next song on spotify breaks the app
-	- skipping through songs
-- rare bug where (korean?) songs 
-- Error Handling: 
-	-> First: Check for internet connection
-	-> Then:
-		-getaddrinfo ENOENT open.spotify.com:80
-		-undefined
-		-
+- check for internet connection
 - sidebar with current playing track information from spotify
-- MAYBE: let the user locally save certain spotify song / lyric combinations (via spotify song id and genius id) to permanently fix some wrong song recognitions
+- let the user locally save certain spotify song / lyric combinations (via spotify song id and genius id) to permanently fix some wrong song recognitions
+- additional lyrics api as alternative to genius.com
+
+PROBLEMS:
+- searching for songs with extra tags in their titles (such as '- live') are giving wrong results or don't work at all
+- rare bug where (korean?) songs crash???
+- Related to spamming next song the notification toast that says "loading ..." also breaks
+
+LONG-TERM-PROBLEMS:
+-> Spamming next song in spotify doesnt break the app anymore but the automatic lyrics changing gets confused.
+	- Need to find a way to cancel the function 'updatePlayingSong()' when the track has changed another time
+        - Idea: Multithreading: https://electronjs.org/docs/tutorial/multithreading with web workers
 
 FIXED:
 - update shown song function is being called 3 times initially???
+- button icons available without internet connection
