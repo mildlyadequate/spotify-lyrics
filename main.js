@@ -23,8 +23,15 @@ const lyricist = new Lyricist(process.env.GENIUS_ACCESS_TOKEN);
 
 let mainWindow;
 
+// Spotify Helper Variable
 var currentTrack;
+
+// MainWindow current height
 var currentHeight = 640;
+
+// Is application updating currently shown lyrics
+var isUpdatingLyrics = false;
+var isStatusChanging = false;
 
 /*
 ===================================== WINDOWS =================================
@@ -135,7 +142,7 @@ helper.player.on('ready', () => {
 
     helper.player.on('track-will-change', function(track){ 
         console.log("1 track-will-change");
-        if(track != currentTrack){
+        if(!isUpdatingLyrics && track != currentTrack){
             mainWindow.webContents.send('toast:lyrics-loading',track);
             updatePlayingSong(track); 
         }
@@ -152,7 +159,19 @@ helper.player.on('ready', () => {
 
     helper.player.on('end', () => { console.log('end') });
 
-    helper.player.on('status-will-change', status => { console.log('2 status-will-change') });
+    helper.player.on('status-will-change', status => {
+        console.log('status-will-change');
+        // TODO Spamming next song in spotify doesnt break the app anymore but the automatic lyrics changing gets confused.
+        // Need to find a way to cancel the function 'updatePlayingSong()' when the track has changed another time
+        // Idea: Multithreading: https://electronjs.org/docs/tutorial/multithreading with web workers
+
+        /*var statusTrack = status.track;
+        if(statusTrack != currentTrack){
+            isStatusChanging = true;
+            currentTrack = statusTrack;
+            updatePlayingSong(statusTrack);
+        }*/
+    });
 });
 
 /*
@@ -170,6 +189,8 @@ function updatePlayingSong(spotify_track) {
 
     // Status update
     mainWindow.webContents.send('status:change', 'Getting song info from Spotify');
+    
+    isUpdatingLyrics = true;
 
     // Receive track object from spotify web helper (either through parameters on method or straight from helper.status)
     var track;
@@ -179,6 +200,11 @@ function updatePlayingSong(spotify_track) {
         track = spotify_track;
     }
     currentTrack = track;
+
+    if(track.track_resource==undefined){
+        dialog.showErrorBox("Track is undefined", track);
+        return;
+    }
 
     console.log("Searching for: "+track.track_resource.name+ " / "+track.artist_resource.name);
 
@@ -202,7 +228,7 @@ function updatePlayingSong(spotify_track) {
 function updateShownLyrics(genius_lyrics){
 
     if(genius_lyrics == undefined){
-        dialog.showErrorBox("yikes. weird error occured", error);
+        mainWindow.webContents.send('spotify:error', {message: 'No lyrics found for this song on genius.com',title: 'Not found'});
     }
 
     // Status update
@@ -212,6 +238,7 @@ function updateShownLyrics(genius_lyrics){
     lyricist.song(genius_lyrics.result.id,{fetchLyrics: true}).then(function(song) {
         mainWindow.webContents.send('spotify:running');
         mainWindow.webContents.send('lyrics:show', song);
+        isUpdatingLyrics = false;
     }).catch(function(error) {
         console.log(error);
         dialog.showErrorBox("Error in Lyricist scraping", error);
