@@ -1,10 +1,9 @@
- //handle setupevents as quickly as possible
+ // Handle setupevents as quickly as possible
  const setupEvents = require('./installers/setupEvents')
  if (setupEvents.handleSquirrelEvent()) {
-    // squirrel event handled and app will exit in 1000ms, so don't do anything else
+    // Squirrel event handled and app will exit in 1000ms, so don't do anything else
     return;
  }
-
 
 const electron = require('electron');
 const url = require('url');
@@ -13,14 +12,24 @@ const SpotifyWebHelper = require('spotify-web-helper');
 const api = require('genius-api');
 const Lyricist = require('lyricist/node6');
 const configFile = require('./config.js');
+const ElectronOnline = require('electron-online')
 
+// Retreive token from config file, seperate to hide token in github
 process.env.GENIUS_ACCESS_TOKEN = configFile.GENIUS_API_TOKEN;
 
 const{app,BrowserWindow,Menu, ipcMain, dialog} = electron;
+
+// Spotify
 const helper = SpotifyWebHelper();
+
+// Lyrics
 const genius = new api(process.env.GENIUS_ACCESS_TOKEN);
 const lyricist = new Lyricist(process.env.GENIUS_ACCESS_TOKEN);
 
+// Internet Connection
+const connection = new ElectronOnline();
+
+// Windows
 let mainWindow;
 
 // Spotify Helper Variable
@@ -34,12 +43,12 @@ var isUpdatingLyrics = false;
 var isStatusChanging = false;
 
 /*
-===================================== WINDOWS =================================
+===================================== APPLICATION =================================
 */
 
 // Listen for app to be ready
 app.on('ready', function(){
-
+    console.log(connection.status);
     mainWindow = new BrowserWindow({
         width: 1024, 
         height: currentHeight,
@@ -76,20 +85,29 @@ app.on('ready', function(){
    // mainWindow.setMenu(null);
 });
 
+connection.on('online', () => {
+    console.log('App is online!')
+})
+  
+connection.on('offline', () => {
+    console.log('App is offline!')
+})
+
 /*
 ===================================== IPC =================================
 */
 
-// Catch item:add
+// Catch event when the refresh button is clicked
 ipcMain.on('song:refresh', function(e){
     updatePlayingSong(undefined);
 });
 
-// Catch choosesong:open
+// Catch event when the "wrong song" button is clicked
 ipcMain.on('choosesong:open', function(e){
     chooseSongWindow();
 });
 
+// Catch event when an element from the alternative song lyrics list is clicked
 ipcMain.on('song:changed_by_user',function(e,song_lyric){
     updateShownLyrics(song_lyric);
 });
@@ -99,20 +117,24 @@ ipcMain.on('lyrics:cleared',function(e){
     currentTrack = undefined;
 });
 
-
 /*
 ================================ SPOTIFY HELPER ===========================
 */
 
 helper.player.on('error', err => {
-    // TODO Check if internet is working
     // TODO no message when spotify is running but not playing a song
+    
+    // Check if the application has access to the internet
+    if(connection.status=='OFFLINE'){
+        mainWindow.webContents.send('spotify:error', {message: 'You\'re not connected to the internet',title: 'Error'});
+        return;
+    }
 
     // If = undefined, spotify is not running
     if(err.message == undefined){
         console.log("1");
         mainWindow.webContents.send('spotify:error', {message: 'Spotify is not running',title: 'Error'});
-    }if (err.message.match(/No user logged in/)) {
+    }else if (err.message.match(/No user logged in/)) {
         console.log("2");
         mainWindow.webContents.send('spotify:error', {message: 'No user is logged in to Spotify' ,title: 'Error'});
     }else{
@@ -142,8 +164,9 @@ helper.player.on('ready', () => {
 
     helper.player.on('track-will-change', function(track){ 
         console.log("1 track-will-change");
+        mainWindow.webContents.send('sidenav-info:song-information',track);
         if(!isUpdatingLyrics && track != currentTrack){
-            mainWindow.webContents.send('toast:lyrics-loading',track);
+            mainWindow.webContents.send('song:lyrics-loading',track);
             updatePlayingSong(track); 
         }
     });
